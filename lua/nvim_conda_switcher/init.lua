@@ -18,7 +18,7 @@ function M.setup(opts)
 	}, opts)
 
 	if M.config.notify then
-		vim.notify("[conda-switcher] loaded successfully!", vim.log.levels.INFO)
+		-- vim.notify("[conda-switcher] loaded successfully!", vim.log.levels.INFO)
 	end
 
 	-- 尝试加载核心模块（容错处理）
