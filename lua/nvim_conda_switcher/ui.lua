@@ -7,6 +7,7 @@
 local M = {}
 
 local ns_id = vim.api.nvim_create_namespace("CondaSwitcher")
+local ns_cursor = vim.api.nvim_create_namespace("CondaSwitcherCursor")
 
 local function center(str, width)
 	local pad = math.floor((width - #str) / 2)
@@ -40,29 +41,60 @@ function M.open_env_selector()
 		border = "rounded",
 	})
 
+	-- local lines = {}
+	-- table.insert(lines, center("Conda Environments", width))
+	-- table.insert(lines, string.rep("─", width))
+	-- for i, env in ipairs(envs) do
+	-- 	local name = env:match("([^/]+)$") or env
+	-- 	table.insert(lines, string.format(" [%d] %-20s %s", i, name, env))
+	-- end
+	-- table.insert(lines, string.rep("─", width))
+	-- table.insert(lines, " ↑/↓ 移动  Enter 选择  q 退出 ")
+	-- table.insert(lines, string.rep("─", width))
+	--
+	-- vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+	-- vim.api.nvim_buf_add_highlight(buf, ns_id, "Title", 0, 0, -1)
 	local lines = {}
 	table.insert(lines, center("Conda Environments", width))
 	table.insert(lines, string.rep("─", width))
+
+	local current_env = vim.env.CONDA_PREFIX or ""
+	local current_env_line = nil
+
 	for i, env in ipairs(envs) do
 		local name = env:match("([^/]+)$") or env
 		table.insert(lines, string.format(" [%d] %-20s %s", i, name, env))
+		if current_env ~= "" and env == current_env then
+			current_env_line = #lines
+		end
 	end
+
 	table.insert(lines, string.rep("─", width))
 	table.insert(lines, " ↑/↓ 移动  Enter 选择  q 退出 ")
 	table.insert(lines, string.rep("─", width))
 
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+
+	-- 标题高亮
 	vim.api.nvim_buf_add_highlight(buf, ns_id, "Title", 0, 0, -1)
+
+	-- 当前环境黄色高亮
+	if current_env_line then
+		vim.api.nvim_buf_add_highlight(buf, ns_id, "WarningMsg", current_env_line - 1, 0, -1)
+	end
 
 	-- 当前选中项
 	local current_line = 3
 	vim.api.nvim_win_set_cursor(win, { current_line, 0 })
 
+	-- local function highlight_line(line)
+	-- 	vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
+	-- 	vim.api.nvim_buf_add_highlight(buf, ns_id, "Visual", line - 1, 0, -1)
+	-- end
 	local function highlight_line(line)
-		vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
-		vim.api.nvim_buf_add_highlight(buf, ns_id, "Visual", line - 1, 0, -1)
+		vim.api.nvim_buf_clear_namespace(buf, ns_cursor, 0, -1)
+		vim.api.nvim_buf_add_highlight(buf, ns_cursor, "Visual", line - 1, 0, -1)
 	end
-
 	highlight_line(current_line)
 
 	------------------------------------------------------------
